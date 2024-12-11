@@ -1,185 +1,113 @@
-/* eslint-disable no-prototype-builtins */
+
+ /* eslint-disable no-prototype-builtins */
 "use strict";
 
-let request = promisifyPromise(require("request").defaults({ jar: true, proxy: process.env.FB_PROXY }));
+let request = require("request").defaults({ jar: true });
 const stream = require("stream");
-const log = require("npmlog");
+// @NethWs3Dev
 const querystring = require("querystring");
 const url = require("url");
 
-class CustomError extends Error {
-	constructor(obj) {
-		if (typeof obj === 'string')
-			obj = { message: obj };
-		if (typeof obj !== 'object' || obj === null)
-			throw new TypeError('Object required');
-		obj.message ? super(obj.message) : super();
-		Object.assign(this, obj);
-	}
-}
-
-function callbackToPromise(func) {
-	return function (...args) {
-		return new Promise((resolve, reject) => {
-			func(...args, (err, data) => {
-				if (err)
-					reject(err);
-				else
-					resolve(data);
-			});
-		});
-	};
-}
-
-function isHasCallback(func) {
-	if (typeof func !== "function")
-		return false;
-	return func.toString().split("\n")[0].match(/(callback|cb)\s*\)/) !== null;
-}
-
-// replace for bluebird.promisify (but this only applies best to the `request` package)
-function promisifyPromise(promise) {
-	const keys = Object.keys(promise);
-	let promise_;
-	if (
-		typeof promise === "function"
-		&& isHasCallback(promise)
-	)
-		promise_ = callbackToPromise(promise);
-	else
-		promise_ = promise;
-
-	for (const key of keys) {
-		if (!promise[key]?.toString)
-			continue;
-
-		if (
-			typeof promise[key] === "function"
-			&& isHasCallback(promise[key])
-		) {
-			promise_[key] = callbackToPromise(promise[key]);
-		}
-		else {
-			promise_[key] = promise[key];
-		}
-	}
-
-	return promise_;
-}
-
-// replace for bluebird.delay
-function delay(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// replace for bluebird.try
-function tryPromise(tryFunc) {
-	return new Promise((resolve, reject) => {
-		try {
-			resolve(tryFunc());
-		} catch (error) {
-			reject(error);
-		}
-	});
-}
-
-function setProxy(url) {
-	if (typeof url == "undefined")
-		return request = promisifyPromise(require("request").defaults({
-			jar: true
-		}));
-	return request = promisifyPromise(require("request").defaults({
-		jar: true,
-		proxy: url
-	}));
+function setProxy(proxy) {
+  if (typeof proxy == 'string')
+    request = require("request").defaults({ jar: !0, proxy });
+  else 
+    request = require('request').defaults({ jar: !0 });
+  return;
 }
 
 function getHeaders(url, options, ctx, customHeader) {
-	const headers = {
+	var headers = {
 		"Content-Type": "application/x-www-form-urlencoded",
 		Referer: "https://www.facebook.com/",
-		Host: url.replace("https://", "").split("/")[0],
+		Host: new URL(url).hostname,
 		Origin: "https://www.facebook.com",
 		"User-Agent": options.userAgent,
 		Connection: "keep-alive",
-		"sec-fetch-site": "same-origin"
+		"Sec-Fetch-Site": "same-origin",
+    'Sec-Fetch-User': '?1'
 	};
 	if (customHeader) {
 		Object.assign(headers, customHeader);
+    if (customHeader.noRef) 
+      delete headers.Referer;
 	}
-	if (ctx && ctx.region) {
-		headers["X-MSGR-Region"] = ctx.region;
-	}
+	if (ctx && ctx.region) 
+    headers["X-MSGR-Region"] = ctx.region;
 
 	return headers;
 }
 
 function isReadableStream(obj) {
-	return (
-		obj instanceof stream.Stream &&
-		(getType(obj._read) === "Function" ||
-			getType(obj._read) === "AsyncFunction") &&
-		getType(obj._readableState) === "Object"
-	);
+	return obj instanceof stream.Stream && typeof obj._read == "function" && getType(obj._readableState) == "Object";
 }
 
-function get(url, jar, qs, options, ctx) {
-	// I'm still confused about this
-	if (getType(qs) === "Object") {
-		for (const prop in qs) {
-			if (qs.hasOwnProperty(prop) && getType(qs[prop]) === "Object") {
-				qs[prop] = JSON.stringify(qs[prop]);
-			}
-		}
-	}
-	const op = {
-		headers: getHeaders(url, options, ctx),
+function get(url, jar, qs, options, ctx, customHeader) {
+	let callback;
+  var returnPromise = new Promise(function (resolve, reject) {
+    callback = (error, res) => error ? reject(error) : resolve(res);
+  });
+	if (getType(qs) == "Object") 
+    for (let prop in qs) {
+      if (getType(qs[prop]) == 'Object')
+        qs[prop] = JSON.stringify(qs[prop]);
+    }
+	var op = {
+    headers: getHeaders(url, options, ctx, customHeader),
 		timeout: 60000,
-		qs: qs,
-		url: url,
-		method: "GET",
-		jar: jar,
-		gzip: true
-	};
+		qs,
+		jar,
+		gzip: !0
+	}
 
-	return request(op).then(function (res) {
-		return Array.isArray(res) ? res[0] : res;
-	});
+  request.get(url, op, callback);
+
+  return returnPromise;
 }
 
 function post(url, jar, form, options, ctx, customHeader) {
-	const op = {
-		headers: getHeaders(url, options, ctx, customHeader),
-		timeout: 60000,
-		url: url,
-		method: "POST",
-		form: form,
-		jar: jar,
-		gzip: true
-	};
+  let callback;
+  var returnPromise = new Promise(function (resolve, reject) {
+    callback = (error, res) => error ? reject(error) : resolve(res);
+  });
+  
+	var op = {
+    headers: getHeaders(url, options, ctx, customHeader),
+    timeout: 60000,
+		form,
+		jar,
+		gzip: !0
+	}
 
-	return request(op).then(function (res) {
-		return Array.isArray(res) ? res[0] : res;
-	});
+  request.post(url, op, callback);
+
+	return returnPromise;
 }
 
 function postFormData(url, jar, form, qs, options, ctx) {
-	const headers = getHeaders(url, options, ctx);
-	headers["Content-Type"] = "multipart/form-data";
-	const op = {
-		headers: headers,
+  let callback;
+  var returnPromise = new Promise(function (resolve, reject) {
+    callback = (error, res) => error ? reject(error) : resolve(res);
+  });
+  if (getType(qs) == "Object") 
+    for (let prop in qs) {
+      if (getType(qs[prop]) == 'Object')
+        qs[prop] = JSON.stringify(qs[prop]);
+    }
+	var op = {
+		headers: getHeaders(url, options, ctx, {
+      'Content-Type': 'multipart/form-data'
+    }),
 		timeout: 60000,
-		url: url,
-		method: "POST",
 		formData: form,
-		qs: qs,
-		jar: jar,
-		gzip: true
-	};
+		qs,
+		jar,
+		gzip: !0
+	}
 
-	return request(op).then(function (res) {
-		return Array.isArray(res) ? res[0] : res;
-	});
+  request.post(url, op, callback);
+
+	return returnPromise;
 }
 
 function padZeros(val, len) {
@@ -816,6 +744,7 @@ function formatDeltaMessage(m) {
 			m_offset[i] + m_length[i]
 		);
 	}
+
 	return {
 		type: "message",
 		senderID: formatID(md.actorFbId.toString()),
@@ -828,7 +757,7 @@ function formatDeltaMessage(m) {
 		mentions: mentions,
 		timestamp: md.timestamp,
 		isGroup: !!md.threadKey.threadFbId,
-		participantIDs: m.delta.participants || (md.cid ? md.cid.canonicalParticipantFbids : []) || []
+    participantIDs: m.delta.participants
 	};
 }
 
@@ -924,10 +853,14 @@ function formatHistoryMessage(m) {
 // Get a more readable message type for AdminTextMessages
 function getAdminTextMessageType(type) {
 	switch (type) {
+    case 'unpin_messages_v2':
+      return 'log:unpin-message';
+    case 'pin_messages_v2':
+      return 'log:pin-message';
 		case "change_thread_theme":
 			return "log:thread-color";
 		case "change_thread_icon":
-		case "change_thread_quick_reaction":
+    case 'change_thread_quick_reaction':
 			return "log:thread-icon";
 		case "change_thread_nickname":
 			return "log:user-nickname";
@@ -984,7 +917,6 @@ function formatDeltaEvent(m) {
 				}
 			};
 	}
-
 	return {
 		type: "event",
 		threadID: formatID(
@@ -994,12 +926,12 @@ function formatDeltaEvent(m) {
 			).toString()
 		),
 		messageID: m.messageMetadata.messageId.toString(),
-		logMessageType: logMessageType,
-		logMessageData: logMessageData,
+		logMessageType,
+		logMessageData,
 		logMessageBody: m.messageMetadata.adminText,
 		timestamp: m.messageMetadata.timestamp,
 		author: m.messageMetadata.actorFbId,
-		participantIDs: (m.participants || []).map(p => p.toString())
+    participantIDs: m.participants
 	};
 }
 
@@ -1060,7 +992,7 @@ function getFrom(str, startToken, endToken) {
 	const lastHalf = str.substring(start);
 	const end = lastHalf.indexOf(endToken);
 	if (end === -1) {
-		throw new Error(
+		throw Error(
 			"Could not find endTime `" + endToken + "` in the given string."
 		);
 	}
@@ -1117,21 +1049,6 @@ function makeDefaults(html, userID, ctx) {
 	let reqCounter = 1;
 	const fb_dtsg = getFrom(html, 'name="fb_dtsg" value="', '"');
 
-	// @Hack Ok we've done hacky things, this is definitely on top 5.
-	// We totally assume the object is flat and try parsing until a }.
-	// If it works though it's cool because we get a bunch of extra data things.
-	//
-	// Update: we don't need this. Leaving it in in case we ever do.
-	//       Ben - July 15th 2017
-
-	// var siteData = getFrom(html, "[\"SiteData\",[],", "},");
-	// try {
-	//   siteData = JSON.parse(siteData + "}");
-	// } catch(e) {
-	//   log.warn("makeDefaults", "Couldn't parse SiteData. Won't have access to some variables.");
-	//   siteData = {};
-	// }
-
 	let ttstamp = "2";
 	for (let i = 0; i < fb_dtsg.length; i++) {
 		ttstamp += fb_dtsg.charCodeAt(i);
@@ -1139,187 +1056,108 @@ function makeDefaults(html, userID, ctx) {
 	const revision = getFrom(html, 'revision":', ",");
 
 	function mergeWithDefaults(obj) {
-		// @TODO This is missing a key called __dyn.
-		// After some investigation it seems like __dyn is some sort of set that FB
-		// calls BitMap. It seems like certain responses have a "define" key in the
-		// res.jsmods arrays. I think the code iterates over those and calls `set`
-		// on the bitmap for each of those keys. Then it calls
-		// bitmap.toCompressedString() which returns what __dyn is.
-		//
-		// So far the API has been working without this.
-		//
-		//              Ben - July 15th 2017
 		const newObj = {
+      av: userID,
 			__user: userID,
 			__req: (reqCounter++).toString(36),
 			__rev: revision,
 			__a: 1,
-			// __af: siteData.features,
-			fb_dtsg: ctx.fb_dtsg ? ctx.fb_dtsg : fb_dtsg,
-			jazoest: ctx.ttstamp ? ctx.ttstamp : ttstamp
-			// __spin_r: siteData.__spin_r,
-			// __spin_b: siteData.__spin_b,
-			// __spin_t: siteData.__spin_t,
-		};
-
-		// @TODO this is probably not needed.
-		//         Ben - July 15th 2017
-		// if (siteData.be_key) {
-		//   newObj[siteData.be_key] = siteData.be_mode;
-		// }
-		// if (siteData.pkg_cohort_key) {
-		//   newObj[siteData.pkg_cohort_key] = siteData.pkg_cohort;
-		// }
+			fb_dtsg: ctx.fb_dtsg || fb_dtsg,
+			jazoest: ctx.ttstamp || ttstamp
+		}
 
 		if (!obj) return newObj;
 
-		for (const prop in obj) {
+		for (var prop in obj) {
 			if (obj.hasOwnProperty(prop)) {
-				if (!newObj[prop]) {
-					newObj[prop] = obj[prop];
-				}
+				if (!newObj[prop]) 
+          newObj[prop] = obj[prop];
 			}
 		}
 
 		return newObj;
 	}
 
-	function postWithDefaults(url, jar, form, ctxx, customHeader = {}) {
-		return post(url, jar, mergeWithDefaults(form), ctx.globalOptions, ctxx || ctx, customHeader);
-	}
-
-	function getWithDefaults(url, jar, qs, ctxx, customHeader = {}) {
-		return get(url, jar, mergeWithDefaults(qs), ctx.globalOptions, ctxx || ctx, customHeader);
-	}
-
-	function postFormDataWithDefault(url, jar, form, qs, ctxx) {
-		return postFormData(
-			url,
-			jar,
-			mergeWithDefaults(form),
-			mergeWithDefaults(qs),
-			ctx.globalOptions,
-			ctxx || ctx
-		);
-	}
-
 	return {
-		get: getWithDefaults,
-		post: postWithDefaults,
-		postFormData: postFormDataWithDefault
+		get: (url, jar, qs, ctxx, customHeader = {}) => get(url, jar, mergeWithDefaults(qs), ctx.globalOptions, ctxx || ctx, customHeader),
+		post: (url, jar, form, ctxx, customHeader = {}) => post(url, jar, mergeWithDefaults(form), ctx.globalOptions, ctxx || ctx, customHeader),
+		postFormData: (url, jar, form, qs, ctxx) => postFormData(url, jar, mergeWithDefaults(form), mergeWithDefaults(qs), ctx.globalOptions, ctxx || ctx)
 	};
 }
 
-function parseAndCheckLogin(ctx, defaultFuncs, retryCount, sourceCall) {
-	if (retryCount == undefined) {
-		retryCount = 0;
-	}
-	if (sourceCall == undefined) {
-		try {
-			throw new Error();
-		}
-		catch (e) {
-			sourceCall = e;
-		}
-	}
+function parseAndCheckLogin(ctx, http, retryCount) {
+  var delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  var _try = (tryData) => new Promise(function (resolve, reject) {
+    try {
+      resolve(tryData());
+    } catch (error) {
+      reject(error);
+    }
+  });
+  if (retryCount == undefined) retryCount = 0;
+  
 	return function (data) {
-		return tryPromise(function () {
-			log.verbose("parseAndCheckLogin", data.body);
-			if (data.statusCode >= 500 && data.statusCode < 600) {
-				if (retryCount >= 5) {
-					throw new CustomError({
-						message: "Request retry failed. Check the `res` and `statusCode` property on this error.",
-						statusCode: data.statusCode,
-						res: data.body,
-						error: "Request retry failed. Check the `res` and `statusCode` property on this error.",
-						sourceCall: sourceCall
-					});
-				}
-				retryCount++;
-				const retryTime = Math.floor(Math.random() * 5000);
-				log.warn(
-					"parseAndCheckLogin",
-					"Got status code " +
-					data.statusCode +
-					" - " +
-					retryCount +
-					". attempt to retry in " +
-					retryTime +
-					" milliseconds..."
-				);
-				const url =
-					data.request.uri.protocol +
-					"//" +
-					data.request.uri.hostname +
-					data.request.uri.pathname;
-				if (
-					data.request.headers["Content-Type"].split(";")[0] ===
-					"multipart/form-data"
-				) {
+    function any() {
+      if (data.statusCode >= 500 && data.statusCode < 600) {
+        if (retryCount >= 5) {
+          const err = new Error("Request retry failed. Check the `res` and `statusCode` property on this error.");
+					err.statusCode = data.statusCode;
+					err.res = data.body;
+					err.error = "Request retry failed. Check the `res` and `statusCode` property on this error.";
+					throw err;
+        }
+        retryCount++;
+        const retryTime = Math.floor(Math.random() * 5000);
+        console.warn("parseAndCheckLogin", "Got status code " + data.statusCode + " - " + retryCount + ". attempt to retry in " + retryTime + " milliseconds...");
+				const url = data.request.uri.protocol + "//" + data.request.uri.hostname + data.request.uri.pathname;
+        if (data.request.headers["Content-Type"].split(";")[0] === "multipart/form-data") {
 					return delay(retryTime)
-						.then(function () {
-							return defaultFuncs.postFormData(
-								url,
-								ctx.jar,
-								data.request.formData,
-								{}
-							);
-						})
-						.then(parseAndCheckLogin(ctx, defaultFuncs, retryCount, sourceCall));
-				}
-				else {
-					return delay(retryTime)
-						.then(function () {
-							return defaultFuncs.post(url, ctx.jar, data.request.formData);
-						})
-						.then(parseAndCheckLogin(ctx, defaultFuncs, retryCount, sourceCall));
-				}
-			}
-			if (data.statusCode !== 200)
-				throw new CustomError({
-					message: "parseAndCheckLogin got status code: " + data.statusCode + ". Bailing out of trying to parse response.",
-					statusCode: data.statusCode,
-					res: data.body,
-					error: "parseAndCheckLogin got status code: " + data.statusCode + ". Bailing out of trying to parse response.",
-					sourceCall: sourceCall
-				});
-
-			let res = null;
+            .then(function () {
+              return http
+                .postFormData(url, ctx.jar, data.request.formData);
+            })
+            .then(parseAndCheckLogin(ctx, http, retryCount));
+        }
+        else {
+          return delay(retryTime)
+            .then(function () {
+              return http
+                .post(url, ctx.jar, data.request.formData);
+            })
+            .then(parseAndCheckLogin(ctx, http, retryCount));
+        }
+      }
+      
+      if (data.statusCode === 404) return;
+      
+      if (data.statusCode !== 200)
+				throw new Error("parseAndCheckLogin got status code: " + data.statusCode + ". Bailing out of trying to parse response.");
+      
+      let res = null;
 			try {
 				res = JSON.parse(makeParsable(data.body));
-			} catch (e) {
-				throw new CustomError({
-					message: "JSON.parse error. Check the `detail` property on this error.",
-					detail: e,
-					res: data.body,
-					error: "JSON.parse error. Check the `detail` property on this error.",
-					sourceCall: sourceCall
-				});
+      } catch (e) {
+				const err = new Error("JSON.parse error. Check the `detail` property on this error.");
+				err.error = "JSON.parse error. Check the `detail` property on this error.";
+				err.detail = e;
+				err.res = data.body;
+				throw err;
 			}
 
 			// In some cases the response contains only a redirect URL which should be followed
 			if (res.redirect && data.request.method === "GET") {
-				return defaultFuncs
+				return http
 					.get(res.redirect, ctx.jar)
-					.then(parseAndCheckLogin(ctx, defaultFuncs, undefined, sourceCall));
-			}
+					.then(parseAndCheckLogin(ctx, http));
+      }
 
 			// TODO: handle multiple cookies?
-			if (
-				res.jsmods &&
-				res.jsmods.require &&
-				Array.isArray(res.jsmods.require[0]) &&
-				res.jsmods.require[0][0] === "Cookie"
-			) {
-				res.jsmods.require[0][3][0] = res.jsmods.require[0][3][0].replace(
-					"_js_",
-					""
-				);
-				const cookie = formatCookie(res.jsmods.require[0][3], "facebook");
-				const cookie2 = formatCookie(res.jsmods.require[0][3], "messenger");
-				ctx.jar.setCookie(cookie, "https://www.facebook.com");
-				ctx.jar.setCookie(cookie2, "https://www.messenger.com");
-			}
+			if (res.jsmods && res.jsmods.require && Array.isArray(res.jsmods.require[0]) && res.jsmods.require[0][0] === "Cookie") {
+        res.jsmods.require[0][3][0] = res.jsmods.require[0][3][0].replace("_js_", "");
+        const requireCookie = res.jsmods.require[0][3];
+				ctx.jar.setCookie(formatCookie(requireCookie, "facebook"), "https://www.facebook.com");
+				ctx.jar.setCookie(formatCookie(requireCookie, "messenger"), "https://www.messenger.com");
+      }
 
 			// On every request we check if we got a DTSG and we mutate the context so that we use the latest
 			// one for the next requests.
@@ -1339,31 +1177,14 @@ function parseAndCheckLogin(ctx, defaultFuncs, retryCount, sourceCall) {
 			}
 
 			if (res.error === 1357001) {
-				throw new CustomError({
-					message: "Facebook blocked login. Please visit https://facebook.com and check your account.",
-					error: "Not logged in.",
-					res: res,
-					statusCode: data.statusCode,
-					sourceCall: sourceCall
-				});
+				const err = new Error('Facebook blocked the login');
+				err.error = "Not logged in.";
+				throw err;
 			}
 			return res;
-		});
+		}
+		return _try(any);
 	};
-}
-
-function checkLiveCookie(ctx, defaultFuncs) {
-	return defaultFuncs
-		.get("https://m.facebook.com/me", ctx.jar)
-		.then(function (res) {
-			if (res.body.indexOf(ctx.i_userID || ctx.userID) === -1) {
-				throw new CustomError({
-					message: "Not logged in.",
-					error: "Not logged in."
-				});
-			}
-			return true;
-		});
 }
 
 function saveCookies(jar) {
@@ -1497,11 +1318,24 @@ function decodeClientPayload(payload) {
 function getAppState(jar) {
 	return jar
 		.getCookies("https://www.facebook.com")
-		.concat(jar.getCookies("https://facebook.com"))
 		.concat(jar.getCookies("https://www.messenger.com"));
 }
+
+function getAccessFromBusiness(jar, Options) {
+  return function (res) {
+    var html = res ? res.body : null;
+    return get('https://business.facebook.com/content_management', jar, null, Options, null, { noRef: true })
+      .then(function (res) {
+        var token = /"accessToken":"([^.]+)","clientID":/g.exec(res.body)[1];
+        return [html, token];
+      })
+      .catch(function () {
+        return [html, null];
+      });
+  }
+}
+
 module.exports = {
-	CustomError,
 	isReadableStream,
 	get,
 	post,
@@ -1540,6 +1374,7 @@ module.exports = {
 	getAppState,
 	getAdminTextMessageType,
 	setProxy,
-	checkLiveCookie
-};
-
+  getAccessFromBusiness,
+  presenceDecode,
+  presenceEncode
+}

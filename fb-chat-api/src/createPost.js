@@ -3,7 +3,7 @@
 var utils = require('../utils');
 var log = require('npmlog');
 
-module.exports = function (http, api, ctx) {  
+module.exports = function (defaultFuncs, api, ctx) {  
   function handleUpload(msg, form) {
     var cb;
     var rt = new Promise(function (resolve, reject) {
@@ -25,16 +25,16 @@ module.exports = function (http, api, ctx) {
           farr: attachment,
           upload_id: 'jsc_c_6'
         }
-        var main = http
+        var main = defaultFuncs
             .postFormData('https://upload.facebook.com/ajax/react_composer/attachments/photo/upload', ctx.jar, vari)
-            .then(utils.parseAndCheckLogin(ctx, http))
+            .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
             .then(function (res) {
               if (res.error || res.errors) 
                 throw res;
 
               return res.payload;
             });
-
+        
         uploads.push(main);
       }
 
@@ -84,20 +84,20 @@ module.exports = function (http, api, ctx) {
         __relay_internal__pv__IsWorkUserrelayprovider: false,
         __relay_internal__pv__IsMergQAPollsrelayprovider: false
       }
-
-      http
+      
+      defaultFuncs
         .post('https://www.facebook.com/api/graphql/', ctx.jar, {
           fb_api_req_friendly_name: 'ComposerLinkAttachmentPreviewQuery',
           variables: JSON.stringify(vari),
           server_timestamps: true,
           doc_id: 6549975235094234
         })
-        .then(utils.parseAndCheckLogin(ctx, http))
+        .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
         .then(function (res) {
           var res = (res[0] || res).data.link_preview;
           if (JSON.parse(res.share_scrape_data).share_type == 400) 
             throw { error: 'url is not accepted' }
-
+        
           form.input.attachments.push({
             link: {
               share_scrape_data: res.share_scrape_data
@@ -139,7 +139,7 @@ module.exports = function (http, api, ctx) {
     var rt = new Promise(function (resolve, reject) {
       cb = (error, postData) => error ? reject(error) : resolve(postData);
     });
-
+    
     var form = {
       fb_api_req_friendly_name: 'ComposerStoryCreateMutation',
       variables: JSON.stringify(vari),
@@ -147,15 +147,15 @@ module.exports = function (http, api, ctx) {
       doc_id: 6255089511280268
     }
 
-    http
+    defaultFuncs
       .post('https://www.facebook.com/api/graphql/', ctx.jar, form)
-      .then(utils.parseAndCheckLogin(ctx, http))
+      .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
       .then(res => cb(null, res))
       .catch(cb);
 
     return rt;
   }
-
+  
   return function createPost(msg, callback) {
     var cb;
     var rt = new Promise(function (resolve, reject) {
@@ -164,7 +164,7 @@ module.exports = function (http, api, ctx) {
 
     if (typeof msg == 'function') {
       var error = 'Msg must be a string or object and not function';
-      log.error('createPost', error);
+      console.error('createPost', error);
       return msg(error);
     }
     if (typeof callback == 'function') cb = callback;
@@ -172,7 +172,7 @@ module.exports = function (http, api, ctx) {
     var typeMsg = utils.getType(msg);
     if (!['Object', 'String'].includes(typeMsg)) {
       var error = 'Msg must be a string or object and not ' + typeMsg;
-      log.error('createPost', error);
+      console.error('createPost', error);
       return cb(error);
     } else if (typeMsg == 'String') msg = { body: msg };
     msg.allowUserID = msg.allowUserID ? !Array.isArray(msg.allowUserID) ? [msg.allowUserID] : msg.allowUserID : null;
@@ -262,13 +262,12 @@ module.exports = function (http, api, ctx) {
       .then(_ => handleUrl(msg, form))
       .then(_ => handleMention(msg, form))
       .then(_ => createContent(form))
-      .then(function (res) {
+      .then((res) => {
         if (res.error || res.errors) throw res;
-
         return cb(null, (res[0] || res).data.story_create.story.url);
       })
-      .catch(function (err) {
-        log.error('createPost', err);
+      .catch((err) => {
+        //console.error('createPost', err);
         return cb(err);
       });
 
