@@ -4,118 +4,145 @@
     <title>ᯓ★ 𝗔𝗨𝗧𝗢𝗕𝗢𝗧</title>
     <meta name="description" content="Explore our AI Autobot messenger for personalized interactions and efficient task automation, enhancing your online experience.">
     <meta property="og:image" content="https://i.imgur.com/jPAVdEs.jpeg">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="/image/home.png">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">
-          <img src="/image/home.png" alt="Home" style="width: 30px; height: auto;">
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav" style="margin-right: 70px;">
-            <ul class="navbar-nav">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Features </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="/step_by_step_guide">Step-by-Step Guide</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="https://kaiz-webtools.pages.dev/">Web-Tools</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="https://kaizenji-info.pages.dev/">Developer</a>
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="online_user">Active</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="tos-privacy-policy">Terms and Conditions</a>
-                </li>
-            </ul>
+    <nav class="navbar navbar-expand-lg navbar-dark glass-nav">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="/image/home.png" alt="Home" class="nav-logo">
+                <span class="brand-text">AUTOBOT</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/"><i class="fas fa-home"></i> Home</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="featuresDropdown">
+                            <i class="fas fa-star"></i> Features
+                        </a>
+                        <div class="dropdown-menu glass-dropdown">
+                            <a class="dropdown-item" href="/step_by_step_guide"><i class="fas fa-book"></i> Step-by-Step Guide</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="https://kaiz-webtools.pages.dev/"><i class="fas fa-tools"></i> Web-Tools</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="https://kaizenji-info.pages.dev/"><i class="fas fa-code"></i> Developer</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="online_user"><i class="fas fa-users"></i> Active</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="tos-privacy-policy"><i class="fas fa-file-contract"></i> Terms</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
-    <div class="container">
-        <h1 class="col text-center" style="font-size: 20px; padding: 10px;">AUTO-BOT MESSENGER</h1><p style="font-size: 10px; text-align: center;">Version: 1.0.1</p>
-        <form id="json-form">
-            <div class="row">
-                <div class="col-md-12">
-                    <textarea id="json-data" class="form-control centered-textarea center-placeholder" placeholder=""></textarea>
-                </div>
+
+    <div class="container main-container">
+        <div class="glass-card hero-card">
+            <div class="hero-content">
+                <h1 class="hero-title">AUTO-BOT MESSENGER</h1>
+                <p class="version-text">Version: 1.0.1</p>
+                <p class="hero-description">AI-powered automation for enhanced messaging experience</p>
             </div>
-        </form>
-        <p style="margin-top: 15px; font-size: 12px; text-align: left;">Greetings! Begin by entering your cookie. Scroll down to see other features.</p>
+            <div class="hero-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+        </div>
+
+        <div class="glass-card form-card">
+            <form id="json-form">
+                <div class="form-group">
+                    <label for="json-data" class="form-label"><i class="fas fa-key"></i> Enter Your Cookie</label>
+                    <textarea id="json-data" class="form-control glass-input" placeholder="Paste your cookie data here..."></textarea>
+                    <small class="form-text">Greetings! Begin by entering your cookie. Scroll down to see other features.</small>
+                </div>
+            </form>
+        </div>
+
+        <div class="glass-card commands-card" id="listOfCommands">
+            <h2 class="section-title"><i class="fas fa-terminal"></i> Command Selection</h2>
+            <p class="section-description">Please choose your commands by tapping on the respective options.</p>
+            <button class="btn btn-glow" onclick="selectAllCommands(); scrollToSection('listOfCommandsEvent');">
+                <i class="fas fa-check-double"></i> SELECT ALL COMMANDS
+            </button>
+        </div>
+        
+        <div class="glass-card commands-card" id="listOfCommandsEvent">
+            <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Event Commands</h2>
+            <p class="section-description">Please choose your event commands by tapping on the respective options.</p>
+            <button class="btn btn-glow" onclick="selectAllEvents(); scrollToSection('prefixOfCommands');">
+                <i class="fas fa-check-double"></i> SELECT ALL EVENTS
+            </button>
+        </div>
+        
+        <div class="glass-card commands-card" id="prefixOfCommands">
+            <h2 class="section-title"><i class="fas fa-hashtag"></i> Prefix Settings</h2>
+            <p class="section-description">Please provide a prefix (optional). If you choose not to, entering "non-prefix" will be considered as your input.</p>
+            <input type="text" id="inputOfPrefix" class="glass-input" placeholder="@, #, /, *, etc.">
+        </div>
+        
+        <div class="glass-card commands-card" id="adminOfCommands">
+            <h2 class="section-title"><i class="fas fa-user-shield"></i> Admin Settings</h2>
+            <p class="section-description">Please provide an uid (optional). If you choose not to, entering "default" will be considered as your input.</p>
+            <input type="text" id="inputOfAdmin" class="glass-input" placeholder="Admin userID">
+        </div>
+        
+        <div class="glass-card agreement-card">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="agreeCheckbox">
+                <label class="form-check-label" for="agreeCheckbox">
+                    Checking this box certifies that I have read, understood, and agreed to the Terms and Conditions.
+                </label>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <button class="btn btn-primary btn-submit" onclick="State()" disabled id="submitButton">
+                <i class="fas fa-paper-plane"></i> SUBMIT
+            </button>
+        </div>
+        
+        <div id="result" class="glass-card result-card" style="display: none;"></div>
     </div>
 
-    <div class="container" id="listOfCommands">
-        <h1 style="font-size: 12px; padding: 10px;">Please choose your commands by tapping on the respective options.</h1>
-         <button class="btn btn-primary" onclick="selectAllCommands(); scrollToSection('listOfCommandsEvent');">SELECT ALL COMMANDS</button>
-    </div>
-    
-    <div class="container" id="listOfCommandsEvent">
-        <h1 style="font-size: 12px; padding: 10px;">Please choose your event commands by tapping on the respective options.</h1>
-        <button class="btn btn-primary" onclick="selectAllEvents(); scrollToSection('prefixOfCommands');">SELECT ALL EVENTS</button>
-    </div>
-    
-    <div class="container" id="prefixOfCommands">
-        <h1 style="font-size: 12px; padding: 10px;">Please provide a prefix (optional). If you choose not to, entering "non-prefix" will be considered as your input.</h1>
-        <input type="text" id="inputOfPrefix" placeholder="@, #, /, *, etc.">
-    </div>
-    
-    <div class="container" id="adminOfCommands">
-        <h1 style="font-size: 12px; padding: 10px;">Please provide an uid (optional). If you choose not to, entering "default" will be considered as your input.</h1>
-        <input type="text" id="inputOfAdmin" placeholder="Admin userID">
-    </div>
-    
-    <label style="font-size: 10px; display: flex; align-items: center; padding: 22px;">
-        <input type="checkbox" id="agreeCheckbox" style="margin-right: 10px;"> Checking this box certifies that I have read, understood, and agreed to the Terms and Conditions.
-    </label>
-    
-    <div class="col text-center">
-        <button class="btn btn-primary" onclick="State()" disabled id="submitButton" style="width: 100%">Submit</button>
-    </div>
-    
-    <div id="result" class="container text-center" style="display: none; font-size: 10px;"></div>
-    
-    <br><br>
-    
-    <div>
-        <br>
-        <button id="scrollUpBtn"><i class="fa-solid fa-angles-up"></i></button>
-        <div class="footer">
-            <p>© 2024 Kaizenji | All rights reserved.</p>
+    <footer class="glass-footer">
+        <div class="container">
+            <p>© 2025 autobot | All rights reserved.</p>
             <p>Time: <span id="time"></span> | Ping: <span id="ping"></span></p>
         </div>
-    </div>
+    </footer>
 
-      <script>
+    <button id="scrollUpBtn" class="scroll-up-btn"><i class="fas fa-arrow-up"></i></button>
+
+    <script>
         function scrollToSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    section.scrollIntoView({ behavior: 'smooth' });
-}
+            const section = document.getElementById(sectionId);
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
 
-function selectAllCommands() {
-    scrollToSection('listOfCommandsEvent');
-}
+        function selectAllCommands() {
+            scrollToSection('listOfCommandsEvent');
+        }
 
-function selectAllEvents() {
-    scrollToSection('prefixOfCommands');
-}
-      </script>
+        function selectAllEvents() {
+            scrollToSection('prefixOfCommands');
+        }
+    </script>
     
     <script src="script.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
     <script>
@@ -141,4 +168,4 @@ function selectAllEvents() {
         sound.play();
     </script>
 </body>
-</html>
+    </html>
